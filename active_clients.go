@@ -1,6 +1,12 @@
 package unifi
 
-import "fmt"
+import (
+	"errors"
+	"fmt"
+)
+
+// ErrNoSiteProvided is returned when an active-client request has no usable site.
+var ErrNoSiteProvided = errors.New("site must not be nil or empty")
 
 // APIActiveClientsPath returns currently active clients for a site using the
 // Network v2 API. Unlike the legacy stat/sta endpoint, this endpoint includes
