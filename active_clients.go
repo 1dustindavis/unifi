@@ -17,24 +17,43 @@ func (u *Unifi) GetActiveClients(sites []*Site) ([]*ActiveClient, error) {
 	data := make([]*ActiveClient, 0)
 
 	for _, site := range sites {
-		response := make([]*ActiveClient, 0)
-
-		u.DebugLog("Polling Controller, retrieving active UniFi Clients, site %s", site.SiteName)
-
-		clientPath := fmt.Sprintf(APIActiveClientsPath, site.Name)
-		if err := u.GetData(clientPath, &response); err != nil {
+		response, err := u.GetActiveClientsSite(site)
+		if err != nil {
 			return nil, err
-		}
-
-		for _, client := range response {
-			client.SourceName = u.URL
-			client.SiteName = site.SiteName
 		}
 
 		data = append(data, response...)
 	}
 
 	return data, nil
+}
+
+// GetActiveClientsSite returns the currently active clients reported by the
+// UniFi Network v2 API for a single site.
+func (u *Unifi) GetActiveClientsSite(site *Site) ([]*ActiveClient, error) {
+	if u == nil {
+		return nil, ErrNilUnifi
+	}
+
+	if site == nil || site.Name == "" {
+		return nil, ErrNoSiteProvided
+	}
+
+	u.DebugLog("Polling Controller, retrieving active UniFi Clients, site %s", site.SiteName)
+
+	response := make([]*ActiveClient, 0)
+	clientPath := fmt.Sprintf(APIActiveClientsPath, site.Name)
+
+	if err := u.GetData(clientPath, &response); err != nil {
+		return nil, err
+	}
+
+	for _, client := range response {
+		client.SourceName = u.URL
+		client.SiteName = site.SiteName
+	}
+
+	return response, nil
 }
 
 // ActiveClient defines the common fields returned by the Network v2 active
