@@ -14,6 +14,8 @@ import (
 
 const activeClientResponse = `[{"assoc_time":1700000000,"display_name":"Teleport Client 02:00:00:00:00:01","external_client_id":"11111111-2222-4333-8444-555555555555","id":"aaaaaaaaaaaaaaaaaaaaaaaa","ip":"192.0.2.10","last_seen":1700000123,"name":"Teleport Client 02:00:00:00:00:01","network_id":"bbbbbbbbbbbbbbbbbbbbbbbb","rx_bytes":123456789,"rx_packets":123456,"site_id":"cccccccccccccccccccccccc","status":"online","token_id":"dddddddddddddddddddddddd","tx_bytes":987654321,"tx_packets":654321,"type":"TELEPORT","uptime":123}]`
 
+func discardTestLogs(_ string, _ ...interface{}) {}
+
 func TestParseTeleportActiveClient(t *testing.T) {
 	t.Parallel()
 
@@ -52,7 +54,7 @@ func TestGetActiveClients(t *testing.T) {
 
 	u := &unifi.Unifi{
 		Client: server.Client(),
-		Config: &unifi.Config{URL: server.URL},
+		Config: &unifi.Config{URL: server.URL, DebugLog: discardTestLogs},
 	}
 	sites := []*unifi.Site{
 		{Name: "default", SiteName: "Default (default)"},
@@ -77,7 +79,7 @@ func TestGetActiveClients(t *testing.T) {
 func TestGetActiveClientsSiteValidation(t *testing.T) {
 	t.Parallel()
 
-	u := &unifi.Unifi{Config: &unifi.Config{}}
+	u := &unifi.Unifi{Config: &unifi.Config{DebugLog: discardTestLogs}}
 
 	_, err := u.GetActiveClientsSite(nil)
 	assert.ErrorIs(t, err, unifi.ErrNoSiteProvided)
